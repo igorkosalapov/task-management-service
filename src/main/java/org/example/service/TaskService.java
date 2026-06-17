@@ -43,7 +43,7 @@ public class TaskService {
 
     public TaskResponse getTaskById(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + id));
+                .orElseThrow(() -> new TaskNotFoundException(id));
 
         return toResponse(task);
     }
@@ -55,10 +55,10 @@ public class TaskService {
 
     public TaskResponse assignUser(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         task.setAssignee(user);
 
@@ -75,7 +75,7 @@ public class TaskService {
 
     public TaskResponse updateStatus(Long taskId, UpdateTaskStatusRequest request) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         task.setStatus(request.getStatus());
 

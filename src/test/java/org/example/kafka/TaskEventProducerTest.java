@@ -1,4 +1,4 @@
-package org.example.service.kafka;
+package org.example.kafka;
 
 import org.example.kafka.TaskEvent;
 import org.example.kafka.TaskEventProducer;
