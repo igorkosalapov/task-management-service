@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class TaskEventProducer {
 
-    private static final String TOPIC = "task-events";
+    public static final String TOPIC = "task-events";
 
     private final KafkaTemplate<String, TaskEvent> kafkaTemplate;
 
