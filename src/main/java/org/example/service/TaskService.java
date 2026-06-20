@@ -7,6 +7,8 @@ import org.example.dto.UpdateTaskStatusRequest;
 import org.example.entity.Task;
 import org.example.entity.TaskStatus;
 import org.example.entity.User;
+import org.example.exception.TaskNotFoundException;
+import org.example.exception.UserNotFoundException;
 import org.example.kafka.TaskEventProducer;
 import org.example.repository.TaskRepository;
 import org.example.repository.UserRepository;
@@ -41,7 +43,7 @@ public class TaskService {
 
     public TaskResponse getTaskById(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + id));
+                .orElseThrow(() -> new TaskNotFoundException(id));
 
         return toResponse(task);
     }
@@ -53,10 +55,10 @@ public class TaskService {
 
     public TaskResponse assignUser(Long taskId, Long userId) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+                .orElseThrow(() -> new UserNotFoundException(userId));
 
         task.setAssignee(user);
 
@@ -73,7 +75,7 @@ public class TaskService {
 
     public TaskResponse updateStatus(Long taskId, UpdateTaskStatusRequest request) {
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found with id: " + taskId));
+                .orElseThrow(() -> new TaskNotFoundException(taskId));
 
         task.setStatus(request.getStatus());
 

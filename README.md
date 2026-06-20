@@ -331,3 +331,72 @@ kafka:29092
 127.0.0.1:5433
 localhost:9092
 ```
+---
+
+## Автоматические тесты
+
+Проект содержит тесты нескольких уровней:
+
+- **Unit-тесты (модульные тесты)** `TaskServiceTest` — проверяют бизнес-логику сервиса с Mockito без запуска Spring-контекста;
+- **Unit-тесты Kafka producer (производителя Kafka)** `TaskEventProducerTest` — проверяют topic, key и содержимое событий `TASK_CREATED` и `TASK_ASSIGNED`;
+- **MVC-тесты** `TaskControllerTest` — проверяют REST API, валидацию запросов, пагинацию и обработку ошибок через MockMvc;
+- **Integration-тесты (интеграционные тесты)** `TaskFlowIntegrationTest` — поднимают настоящие PostgreSQL и Kafka через Testcontainers и проверяют полную цепочку `HTTP → Service → PostgreSQL → Kafka`.
+
+### Проверяемые сценарии
+
+- создание задачи со статусом `NEW`;
+- публикация события `TASK_CREATED`;
+- получение задачи по id;
+- получение страницы задач;
+- назначение исполнителя;
+- публикация события `TASK_ASSIGNED`;
+- изменение статуса задачи;
+- сохранение данных в PostgreSQL;
+- чтение опубликованных событий настоящим Kafka consumer (потребителем Kafka);
+- ответы `400 Bad Request` при ошибках валидации;
+- ответы `404 Not Found` для отсутствующей задачи или пользователя.
+
+### Запуск отдельных наборов тестов
+
+Только unit- и MVC-тесты, без Docker:
+
+```bash
+mvn -Dtest=TaskServiceTest,TaskEventProducerTest,TaskControllerTest test
+```
+
+Только интеграционные тесты:
+
+```bash
+mvn -Dtest=TaskFlowIntegrationTest test
+```
+
+Перед запуском интеграционных тестов должен быть запущен Docker Desktop. Самостоятельно запускать `docker compose` не нужно: Testcontainers создаёт изолированные контейнеры PostgreSQL и Kafka на время тестов.
+
+Полная проверка проекта и формирование отчёта JaCoCo:
+
+```bash
+mvn clean verify
+```
+
+HTML-отчёт о покрытии после выполнения `verify`:
+
+```text
+target/site/jacoco/index.html
+```
+
+## Обработка ошибок
+
+API возвращает структурированный JSON-ответ. Пример для отсутствующей задачи:
+
+```json
+{
+  "timestamp": "2026-06-17T10:00:00Z",
+  "status": 404,
+  "error": "Not Found",
+  "message": "Task not found with id: 999",
+  "path": "/tasks/999",
+  "validationErrors": {}
+}
+```
+
+При запуске с профилем `test` класс `DataInitializer` отключается, поэтому интеграционные тесты полностью управляют своими тестовыми данными.
